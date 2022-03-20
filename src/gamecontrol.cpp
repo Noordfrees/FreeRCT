@@ -203,28 +203,29 @@ void GameControl::QuitGame()
 void GameControl::NewLevel()
 {
 	/// \todo We blindly assume game data structures are all clean.
-	_world.SetWorldSize(20, 21);
-	_world.MakeFlatWorld(8);
+	_world.SetWorldSize(127, 127);
+	_world.MakeFlatWorld(12);
 	_world.SetTileOwnerGlobally(OWN_NONE);
-	_world.SetTileOwnerRect(2, 2, 16, 15, OWN_PARK);
-	_world.SetTileOwnerRect(2, 18, 16, 2, OWN_FOR_SALE);
+	_world.SetTileOwnerRect(16, 16, 95, 95, OWN_PARK);
+	_world.SetTileOwnerRect(80, 80, 31, 31, OWN_FOR_SALE);
 
 	std::vector<const SceneryType*> park_entrance_types = _scenery.GetAllTypes(SCC_SCENARIO);
+	this->initial_location = XYZPoint32(64 * 256, 15 * 256, 12 * 256);
 	if (park_entrance_types.size() < 3) {
-		_world.SetTileOwnerRect(8, 0, 4, 2, OWN_PARK); // Allow building path to map edge in north west.
+		_world.SetTileOwnerRect(63, 0, 2, 16, OWN_PARK); // Allow building path to map edge in north west.
 	} else {
 		/* Assemble a park entrance and some paths. This assumes that the entrance parts are the first three scenario scenery items loaded. */
-		_world.AddEdgesWithoutBorderFence(Point16(9, 1), EDGE_SE);
+		_world.AddEdgesWithoutBorderFence(Point16(64, 15), EDGE_SE);
 		for (int i = 0; i < 3; i++) {
 			SceneryInstance *item = new SceneryInstance(park_entrance_types[i]);
 			item->orientation = 0;
-			item->vox_pos.x = 8 + i;
-			item->vox_pos.y = 1;
-			item->vox_pos.z = (i == 1 ? 12 : 8);
+			item->vox_pos.x = 63 + i;
+			item->vox_pos.y = 15;
+			item->vox_pos.z = (i == 1 ? 16 : 12);
 			_scenery.AddItem(item);
 		}
-		for (int i = 0; i < 6; i++) {
-			BuildFlatPath(XYZPoint16(9, i, 8), PAT_CONCRETE, false);
+		for (int i = 0; i < 24; i++) {
+			BuildFlatPath(XYZPoint16(64, i, 12), PAT_CONCRETE, false);
 		}
 	}
 
@@ -240,8 +241,7 @@ void GameControl::StartLevel()
 	_game_mode_mgr.SetGameMode(GM_PLAY);
 	this->speed = GSP_1;
 
-	XYZPoint32 view_pos(_world.GetXSize() * 256 / 2, _world.GetYSize() * 256 / 2, 8 * 256);
-	ShowMainDisplay(view_pos);
+	ShowMainDisplay(this->initial_location);
 	if (!this->main_menu) {
 		ShowToolbar();
 		ShowBottomToolbar();

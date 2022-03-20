@@ -78,6 +78,7 @@ private:
 
 	GameControlAction next_action; ///< Action game control wants to run, or #GCA_NONE for 'no action'.
 	std::string fname;             ///< Filename of game level to load from or save to.
+	XYZPoint32 initial_location;   ///< Initial position of the viewport.
 };
 
 extern GameControl _game_control;

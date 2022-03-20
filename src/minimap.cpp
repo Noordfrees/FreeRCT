@@ -80,7 +80,7 @@ Minimap::Minimap() : GuiWindow(WC_MINIMAP, ALL_WINDOWS_OF_TYPE)
 	this->SetScrolledWidget(MM_MAIN, MM_SCROLL_HORZ);
 	this->SetScrolledWidget(MM_MAIN, MM_SCROLL_VERT);
 
-	this->zoom = 4;
+	this->zoom = 2;
 	this->UpdateButtons();
 }
 
@@ -93,6 +93,7 @@ void Minimap::UpdateButtons()
 	for (ScrollbarWidget *s : {this->GetWidget<ScrollbarWidget>(MM_SCROLL_HORZ), this->GetWidget<ScrollbarWidget>(MM_SCROLL_VERT)}) {
 		s->SetItemSize(this->zoom);
 		s->SetItemCount(_world.GetXSize() + _world.GetYSize());
+		s->SetStart((_world.GetXSize() + _world.GetYSize() - s->GetVisibleCount()) / 2);
 	}
 }
 
@@ -249,6 +250,7 @@ void Minimap::OnClick(WidgetNumber number, const Point16 &clicked_pos)
 				Viewport *vp = _window_manager.GetViewport();
 				vp->view_pos.x = voxelX * 256;
 				vp->view_pos.y = voxelY * 256;
+				this->MarkDirty();
 			}
 			break;
 		}

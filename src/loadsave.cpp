@@ -7,6 +7,8 @@
 
 /** @file loadsave.cpp Savegame loading and saving code. */
 
+#include <algorithm>
+#include <cstdarg>
 #include "stdafx.h"
 #include "dates.h"
 #include "random.h"
@@ -20,6 +22,10 @@
 #include "gamelevel.h"
 #include "gameobserver.h"
 #include "rev.h"
+
+#ifdef WEBASSEMBLY
+#include <emscripten.h>
+#endif
 
 /** Whether savegame files should automatically be resaved after loading. */
 bool _automatically_resave_files = false;
@@ -468,7 +474,32 @@ bool SaveGameFile(const char *fname)
 	fclose(fp);
 
 #ifdef WEBASSEMBLY
-	printf("WEBASSEMBLY: Game saved to %s\n", fname);
+	/* Read the saved file again, encode it, and upload the result. */
+	std::string javascript = "GameSavedCallback('";
+	for (const char *c = fname; *c != '\0'; ++c) {
+		if (*c == '\'') {
+			javascript += "\\\'";
+		} else {
+			javascript += *c;
+		}
+	}
+	javascript += "', '";
+
+	fp = fopen(fname, "rb");
+	if (fp == nullptr) {
+		printf("WARNING: Cannot open saved file\n");
+		return false;
+	}
+	for (;;) {
+		int byte = getc(fp);
+		if (byte == EOF) break;
+		javascript += (byte & 0xf) + 'A';
+		javascript += (byte >> 4) + 'a';
+	}
+	fclose(fp);
+
+	javascript += "')";
+	emscripten_run_script(javascript.c_str());
 #endif
 
 	return true;

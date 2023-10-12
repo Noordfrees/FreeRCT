@@ -91,15 +91,15 @@ const std::string &freerct_executable_prefix()
 {
 	if (_freerct_executable_prefix_cache.has_value()) return *_freerct_executable_prefix_cache;
 
-#if _WIN32
 	char executable_filepath[MAX_PATH];
+#if _WIN32
 	GetModuleFileNameA(nullptr, executable_filepath, MAX_PATH);
 #elif defined(__linux__)
-	char executable_filepath[MAX_PATH];
 	int l = readlink("/proc/self/exe", executable_filepath, MAX_PATH);
 	executable_filepath[std::max(l, 0)] = '\0';
 #else
 	/* \todo Extend for MacOS and others. */
+	executable_filepath[0] = '\0';
 #endif
 
 	if (executable_filepath[0] != '\0') {

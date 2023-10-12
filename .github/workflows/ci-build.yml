@@ -147,12 +147,10 @@ jobs:
         pushd build
         make install DESTDIR=../AppDir
         popd
-        mv AppDir/usr/bin/share/* AppDir/usr/share
-        rmdir AppDir/usr/bin/share
 
         wget -nv -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
-        ./linuxdeploy-x86_64.AppImage --executable AppDir/usr/bin/freerct --desktop-file build/packaging_data/freerct.desktop --appdir AppDir --output appimage
+        ./linuxdeploy-x86_64.AppImage --executable AppDir/usr/games/freerct --desktop-file build/packaging_data/freerct.desktop --appdir AppDir --output appimage
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v3

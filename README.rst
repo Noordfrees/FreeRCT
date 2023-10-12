@@ -1,3 +1,11 @@
+.. image:: https://ci.codeberg.org/api/badges/12689/status.svg
+    :alt: Continuous Integration
+    :target: https://ci.codeberg.org/repos/12689
+
+.. image:: https://translate.codeberg.org/widget/freerct/freerct/svg-badge.svg
+    :alt: Translation Status
+    :target: https://translate.codeberg.org/engage/freerct/
+
 FreeRCT aims to be a free and open source game which captures the look, feel and gameplay of the popular games RollerCoaster Tycoon 1 and 2.
 
 .. image:: freerct.png

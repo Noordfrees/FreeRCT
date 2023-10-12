@@ -390,7 +390,7 @@ const std::string &GetUserHomeDirectory()
  */
 std::string FindDataFile(const std::string &name)
 {
-	for (std::string path : {std::string("."), std::string(".."), std::string("..") + DIR_SEP + "..", freerct_install_prefix()}) {
+	for (std::string path : {std::string("."), std::string(".."), std::string("..") + DIR_SEP + "..", freerct_install_prefix(), freerct_executable_prefix()}) {
 		path += DIR_SEP;
 		path += name;
 		if (PathIsFile(path)) return path;

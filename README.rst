@@ -1,3 +1,7 @@
+.. image:: graphics/sprites/logo/logo_256.png
+    :alt: FreeRCT
+    :target: https://freerct.net
+
 .. image:: https://ci.codeberg.org/api/badges/12689/status.svg
     :alt: Continuous Integration
     :target: https://ci.codeberg.org/repos/12689
@@ -9,7 +13,7 @@
 FreeRCT aims to be a free and open source game which captures the look, feel and gameplay of the popular games RollerCoaster Tycoon 1 and 2.
 
 .. image:: freerct.png
-        :alt: mainview
+    :alt: Main View
 
 Building the program
 --------------------

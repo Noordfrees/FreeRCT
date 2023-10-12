@@ -72,6 +72,7 @@ void RcdFileCollection::ScanDirectories()
 	const std::string _rcd_paths[] = {
 		".",
 		freerct_install_prefix() + DIR_SEP + "rcd",
+		freerct_executable_prefix() + DIR_SEP + "rcd",
 		TrackDesignDirectory()
 	};
 	for (const std::string &rcd_path : _rcd_paths) this->ScanDirectory(rcd_path, 3);

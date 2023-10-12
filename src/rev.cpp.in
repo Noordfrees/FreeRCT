@@ -10,6 +10,13 @@
 #include "rev.h"
 #include "stdafx.h"
 #include "fileio.h"
+#include <optional>
+
+#if _WIN32
+#include <Windows.h>
+#elif defined(__linux__)
+#include <unistd.h>
+#endif
 
 /**
  * The text version of FreeRCT's revision.
@@ -43,17 +50,8 @@ const char _freerct_build_date[] = __DATE__ " " __TIME__;
 static std::string _freerct_install_prefix("${CMAKE_INSTALL_PREFIX}/${PACKAGING_DATA_DIR}");  ///< The location where all FreeRCT assets are installed.
 static std::string _freerct_userdata_prefix_override("${USERDATA_PREFIX}");                   ///< NOLINT – clang-tidy may produce a false-positive here.
                                                                                               ///< A manually defined user data location.
-static std::string _freerct_userdata_prefix_cache;                                            ///< Cache for the result of #freerct_userdata_prefix.
-
-/**
- * Change the location where all FreeRCT assets are installed.
- * This should be called only during startup.
- * @param dir The path.
- */
-void OverrideInstallPrefix(const char *dir)
-{
-	_freerct_install_prefix = dir;
-}
+static std::optional<std::string> _freerct_userdata_prefix_cache;                             ///< Cache for the result of #freerct_userdata_prefix.
+static std::optional<std::string> _freerct_executable_prefix_cache;                           ///< Cache for the result of #executable_prefix.
 
 /**
  * Change the location where all FreeRCT assets are installed.
@@ -63,7 +61,7 @@ void OverrideInstallPrefix(const char *dir)
 void OverrideUserdataPrefix(const char *dir)
 {
 	_freerct_userdata_prefix_override = dir;
-	_freerct_userdata_prefix_cache.clear();
+	_freerct_userdata_prefix_cache = std::nullopt;
 }
 
 /**
@@ -76,13 +74,62 @@ const std::string &freerct_install_prefix()
 }
 
 /**
+ * Change the location where all FreeRCT assets are installed.
+ * This should be called only during startup.
+ * @param dir The path.
+ */
+void OverrideInstallPrefix(const char *dir)
+{
+	_freerct_install_prefix = dir;
+}
+
+/**
+ * The FreeRCT installation directory based on where the FreeRCT executable is located.
+ * @return The path.
+ */
+const std::string &freerct_executable_prefix()
+{
+	if (_freerct_executable_prefix_cache.has_value()) return *_freerct_executable_prefix_cache;
+
+#if _WIN32
+	char executable_filepath[MAX_PATH];
+	GetModuleFileNameA(nullptr, executable_filepath, MAX_PATH);
+#elif defined(__linux__)
+	char executable_filepath[MAX_PATH];
+	int l = readlink("/proc/self/exe", executable_filepath, MAX_PATH);
+	executable_filepath[std::max(l, 0)] = '\0';
+#else
+	/* \todo Extend for MacOS and others. */
+#endif
+
+	if (executable_filepath[0] != '\0') {
+		std::filesystem::path installpath(executable_filepath);
+		installpath = installpath.parent_path().parent_path();
+		installpath /= "share";
+#ifdef __linux__
+		installpath /= "games";
+#endif
+		installpath /= "freerct";
+		_freerct_executable_prefix_cache = installpath.string();
+	} else {
+		printf(
+			"WARNING: Unable to detect the executable's directory!\n"
+			"Using fallback path: %s\n"
+			"Use `--installdir DIR` in case the program fails to start.\n",
+			freerct_install_prefix().c_str());
+		_freerct_executable_prefix_cache = std::string();
+	}
+
+	return *_freerct_executable_prefix_cache;
+}
+
+/**
  * The location where the user's savegames and other data is stored.
  * @return The path.
- * @todo This is written for static paths and Linux-specific homedir detection. Not tested in more convoluted conditions.
  */
 const std::string &freerct_userdata_prefix()
 {
-	if (!_freerct_userdata_prefix_cache.empty()) return _freerct_userdata_prefix_cache;
+	if (_freerct_userdata_prefix_cache.has_value()) return *_freerct_userdata_prefix_cache;
 
 	if (!_freerct_userdata_prefix_override.empty()) {
 		/* The user manually set a location. */
@@ -92,18 +139,18 @@ const std::string &freerct_userdata_prefix()
 		const char *xdg_data_home = getenv("XDG_DATA_HOME");
 		if (xdg_data_home != nullptr && xdg_data_home[0] != '\0') {
 			_freerct_userdata_prefix_cache = xdg_data_home;
-			_freerct_userdata_prefix_cache += DIR_SEP;
-			_freerct_userdata_prefix_cache += "freerct";
+			*_freerct_userdata_prefix_cache += DIR_SEP;
+			*_freerct_userdata_prefix_cache += "freerct";
 		} else {
 			/* The XDG spec is not applicable, fall back to a reasonable default path. */
 			_freerct_userdata_prefix_cache = GetUserHomeDirectory();
 #ifdef _WIN32
-			_freerct_userdata_prefix_cache += "\\.freerct";
+			*_freerct_userdata_prefix_cache += "\\.freerct";
 #else
-			_freerct_userdata_prefix_cache += "/.local/share/freerct";
+			*_freerct_userdata_prefix_cache += "/.local/share/freerct";
 #endif
 		}
 	}
 
-	return _freerct_userdata_prefix_cache;
+	return *_freerct_userdata_prefix_cache;
 }

@@ -156,7 +156,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: FreeRCT ${{ matrix.config }} ${{ matrix.compiler }} Linux AppImage
-        path: ${{ github.workspace }}/*.AppImage
+        path: ${{ github.workspace }}/FreeRCT*.AppImage
     - name: Upload package (DEB)
       uses: actions/upload-artifact@v3
       with:

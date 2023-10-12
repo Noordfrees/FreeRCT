@@ -124,7 +124,7 @@ jobs:
     - name: Build
       run: |
         mkdir build
-        cd build
+        pushd build
 
         echo "::group::CMake"
         if [ ${{ matrix.config }} == Release ]; then rel="-DRELEASE=ON"; else rel=""; fi
@@ -140,8 +140,16 @@ jobs:
         cpack
         echo "::endgroup::"
 
+        popd
+
     - name: Create AppImage
       run: |
+        pushd build
+        make install DESTDIR=../AppDir
+        popd
+        mv AppDir/usr/bin/share/* AppDir/usr/share
+        rmdir AppDir/usr/bin/share
+
         wget -nv -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
         ./linuxdeploy-x86_64.AppImage --executable AppDir/usr/bin/freerct --desktop-file build/packaging_data/freerct.desktop --appdir AppDir --output appimage

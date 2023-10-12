@@ -6,6 +6,7 @@ on:
     branches:
     - master
     - release/*
+    - test-appimage
 
 jobs:
   clang-tidy:
@@ -139,6 +140,17 @@ jobs:
         cpack
         echo "::endgroup::"
 
+    - name: Create AppImage
+      run: |
+        wget -nv -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        ./linuxdeploy-x86_64.AppImage --executable AppDir/usr/bin/freerct --desktop-file build/packaging_data/freerct.desktop --appdir AppDir --output appimage
+
+    - name: Upload AppImage
+      uses: actions/upload-artifact@v3
+      with:
+        name: FreeRCT ${{ matrix.config }} ${{ matrix.compiler }} Linux AppImage
+        path: ${{ github.workspace }}/*.AppImage
     - name: Upload package (DEB)
       uses: actions/upload-artifact@v3
       with:

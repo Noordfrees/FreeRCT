@@ -195,7 +195,7 @@ jobs:
           libpng \
           glfw3 \
           zlib \
-          freetype-gl \
+          freetype-gl[core] \
           # EOF
 
     - name: Install GCC problem matcher
